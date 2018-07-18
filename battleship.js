@@ -1,319 +1,355 @@
 const readline = require('readline');
 const readlineSync = require('readline-sync');
 
-grid = [['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9'],
-        ['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9'],
-        ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9'],
-        ['D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9'],
-        ['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'E8', 'E9'],
-        ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9'],
-        ['G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'G9'],
-        ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'H9'],
-        ['I1', 'I2', 'I3', 'I4', 'I5', 'I6', 'I7', 'I8', 'I9'],
-        ['J1', 'J2', 'J3', 'J4', 'J5', 'J6', 'J7', 'J8', 'J9']]
-
-//This function starts the game by asking user to enter the locations for the ships. It then proceeds with the game by calling
-// playerMove, displayGrid and checkForWinner.
-function play() {
-  console.log(grid);
-
-  player1Ships = [];
-  player2Ships = [];
-  player1Hits = [];
-  player2Hits = [];
-  player1Misses = [];
-  player2Misses = [];
-  winner = false;
-
-  carrier1 = readlineSync.question('PLAYER 1: Enter start location for Carrier(Size = 5) : ').toUpperCase();
-  carrier1 = displayOptions(carrier1, 5, player1Ships);
-  player1Ships.push(carrier1);
-  battleship1 = readlineSync.question('PLAYER 1: Enter start location for Battleship(Size = 4) : ').toUpperCase();
-  battleship1 = displayOptions(battleship1, 4, player1Ships);
-  player1Ships.push(battleship1);
-  cruiser1 = readlineSync.question('PLAYER 1: Enter start location for Cruiser(Size = 3) : ').toUpperCase();
-  cruiser1 = displayOptions(cruiser1, 3, player1Ships);
-  player1Ships.push(cruiser1);
-  submarine1 = readlineSync.question('Enter start location for Submarine(Size = 3) : ').toUpperCase();
-  submarine1 = displayOptions(submarine1, 3, player1Ships);
-  player1Ships.push(submarine1);
-  destroyer1 = readlineSync.question('Enter start location for Destroyer(Size = 2) : ').toUpperCase();
-  destroyer1 = displayOptions(destroyer1, 2, player1Ships);
-  player1Ships.push(destroyer1);
-  console.clear();
-
-  carrier2 = readlineSync.question('Enter start location for Carrier(Size = 5) : ').toUpperCase();
-  carrier2 = displayOptions(carrier2, 5, player2Ships);
-  player2Ships.push(carrier2);
-  battleship2 = readlineSync.question('Enter start location for Battleship(Size = 4) : ').toUpperCase();
-  battleship2 = displayOptions(battleship2, 4, player2Ships);
-  player2Ships.push(battleship2);
-  cruiser2 = readlineSync.question('Enter start location for Cruiser(Size = 3) : ').toUpperCase();
-  cruiser2 = displayOptions(cruiser2, 3, player2Ships);
-  player2Ships.push(cruiser2);
-  submarine2 = readlineSync.question('Enter start location for Submarine(Size = 3) : ').toUpperCase();
-  submarine2 = displayOptions(submarine2, 3, player2Ships);
-  player2Ships.push(submarine2);
-  destroyer2 = readlineSync.question('Enter start location for Destroyer(Size = 2) : ').toUpperCase();
-  destroyer2 = displayOptions(destroyer2, 2, player2Ships);
-  player2Ships.push(destroyer2);
-  console.clear();
-
-//If there is no winner then keep playing
-    while (winner != true) {
-      playerMove('Player 1', carrier2, battleship2, cruiser2, submarine2, destroyer2, player1Hits, player1Misses);
-      displayGrid('player1',player1Ships, player1Hits, player1Misses, player2Hits);
-      endTurn();
-
-      winner = checkForWinner('Player 1', carrier2, battleship2, cruiser2, submarine2, destroyer2);
-      if(winner == true) {
-        return
-      }
-
-      playerMove('Player 2', carrier1, battleship1, cruiser1, submarine1, destroyer1, player2Hits, player2Misses);
-      displayGrid('player2', player2Ships, player1Hits, player2Misses, player2Hits);
-      endTurn();
-
-      winner = checkForWinner('Player 2', carrier1, battleship1, cruiser1, submarine1, destroyer1);
-  }
+class Board {
+	constructor(grid) {
+		this.grid = [['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9'],
+			['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9'],
+			['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9'],
+			['D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9'],
+			['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'E8', 'E9'],
+			['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9'],
+			['G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'G9'],
+			['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'H9'],
+			['I1', 'I2', 'I3', 'I4', 'I5', 'I6', 'I7', 'I8', 'I9'],
+			['J1', 'J2', 'J3', 'J4', 'J5', 'J6', 'J7', 'J8', 'J9']]
+	}
 }
 
-//Displays the updated grid showing all the hits and misses and also the location of the players ships.
-function displayGrid(player, ships, hits1, misses, hits2) {
-  var updatedGrid = deepCloning(grid);
-  for(i = 0;i < updatedGrid.length; i++) {
-    for(j = 0;j < updatedGrid[i].length; j++) {
-      for(k = 0;k < ships.length; k++){
-        if(ships[k].includes(grid[i][j])) {
-          updatedGrid[i][j] = 'S'
-        }
-      }
-    }
-  }
-
-  for(i = 0;i < updatedGrid.length; i++) {
-    for(j = 0;j < updatedGrid[i].length; j++) {
-      if(player == 'player2') {
-        if(hits1.includes(grid[i][j])) {
-          updatedGrid[i][j] = 'P1 H'
-        }
-        else if(hits2.includes(grid[i][j])) {
-          updatedGrid[i][j] = 'P2 H'
-        }
-      }
-      if(player == 'player1') {
-        if(hits2.includes(grid[i][j])) {
-          updatedGrid[i][j] = 'P2 H'
-        }
-        else if(hits1.includes(grid[i][j])) {
-          updatedGrid[i][j] = 'P1 H'
-        }
-      }
-      if(misses.includes(grid[i][j])) {
-        updatedGrid[i][j] = 'M'
-      }
-    }
-  }
-  console.log(updatedGrid);
+class Player {
+	constructor(name, ships, hits, misses) {
+		this.name = '';
+		this.ships = [];
+		this.hits = [];
+		this.misses = [];
+	}
 }
 
-//Asks user for a start point from where they want to enter their ship. Then shows the user all the options from that position.
-function displayOptions(ship, size, allships) {
-  shipValid = validateShip(ship);
-  valid = validateOptions(ship, allships);
-  while(valid == false) {
-    ship = readlineSync.question('You have already placed a ship here. Please enter a different location :').toUpperCase();
-    valid = validateOptions(ship, allships);
-  }
-
-  while(shipValid == false) {
-    ship = readlineSync.question('This is not a valid location. Please enter a different location :').toUpperCase();
-    shipValid = validateShip(ship);
-  }
-
-      options = []
-      option1 = []
-      option2 = []
-      option3 = []
-      option4 = []
-
-      //horizontal right
-      i = shipCoordinate2
-      for(j = 0; j < size; j++) {
-        if(i < grid[0].length) {
-            option1.push(grid[shipCoordinate1][shipCoordinate2+j])
-            i = i + 1
-          }
-      }
-
-      i = shipCoordinate2
-      for(j = 0; j < size; j++) {
-          if(i >= 0) {
-            option2.push(grid[shipCoordinate1][shipCoordinate2-j])
-            i = i - 1;
-          }
-      }
-      //vertical
-      i = shipCoordinate1
-      for(j = 0; j < size; j++) {
-        if(i < grid.length) {
-            option3.push(grid[shipCoordinate1+j][shipCoordinate2])
-            i = i + 1
-          }
-      }
-
-      i = shipCoordinate1
-      for(j = 0; j < size; j++) {
-          if(i >= 0) {
-            option4.push(grid[shipCoordinate1-j][shipCoordinate2])
-            i = i - 1;
-          }
-      }
-
-      options.push(option1, option2, option3, option4);
-
-      var dict = [];
-      j = 0
-      for(i = 0; i < options.length; i++) {
-        if(options[i].length == size) {
-          dict.push({
-              key: j,
-              value: options[i]
-          });
-          console.log(j + ': ' + options[i])
-          j = j + 1
-        }
-      }
-
-      selectedOption = readlineSync.question('Enter an option :');
-      selectedOptionValid = validateSelectedOption(selectedOption, dict);
-      while(selectedOptionValid != true) {
-        selectedOption = readlineSync.question('This is not a valid option. Please enter a different option :').toUpperCase();
-        selectedOptionValid = validateSelectedOption(selectedOption, dict);
-      }
-      return dict[selectedOption].value;
+class Ship {
+	constructor(size){
+		this.name = '';
+		this.value = [];
+		this.xpos = '';
+		this.ypos = '';
+		this.size = size;
+	}
 }
 
-//It checks whether the coordinates entered for the ship are accurate or not.
-function validateShip(ship) {
-  for(i = 0; i < grid.length; i++) {
-    for(j = 0; j < grid[i].length; j++) {
-      if(ship == grid[i][j]) {
-          shipCoordinate1 = i;
-          shipCoordinate2 = j;
-          return true;
-        }
-      }
-    }
-    return false;
+function Game() {
+	var b = new Board();
+	var grid = b.grid;
+
+	var player1 = new Player();
+	player1.name = "Player 1";
+	var player2 = new Player();
+	player2.name = "Player 2";
+
+	this.gameLoop = function () {
+		console.log(grid);
+
+		var carrier1 = new Ship(5);
+		this.placeShip(carrier1, player1)
+		var battleship1 = new Ship(4);
+		this.placeShip(battleship1, player1)
+		var cruiser1 = new Ship(3);
+		this.placeShip(cruiser1, player1)
+		var submarine1 = new Ship(3);
+		this.placeShip(submarine1, player1)
+		var destroyer1 = new Ship(2);
+		this.placeShip(destroyer1, player1)
+		console.clear();
+
+		var carrier2 = new Ship(5);
+		this.placeShip(carrier2, player2)
+		var battleship2 = new Ship(4);
+		this.placeShip(battleship2, player2)
+		var cruiser2 = new Ship(3);
+		this.placeShip(cruiser2, player2)
+		var submarine2 = new Ship(3);
+		this.placeShip(submarine2, player2)
+		var destroyer2 = new Ship(2);
+		this.placeShip(destroyer2, player2)
+		console.clear();
+
+		player1ShipsGrid = this.displayShips(player1);
+		player2ShipsGrid = this.displayShips(player2);
+
+		winner = false;
+		while (winner != true) {
+			this.beginTurn();
+			console.log(player1ShipsGrid);
+			this.displayAttacks(player1, player1, player2);
+			this.playerMove(carrier2, battleship2, cruiser2, submarine2, destroyer2, player1);
+			winner = this.checkForWinner(player1);
+			if(winner == true) {
+				return
+			}
+			this.displayAttacks(player1, player1, player2);
+			this.endTurn();
+
+			this.beginTurn();
+			console.log(player2ShipsGrid)
+			this.displayAttacks(player2, player1, player2);
+			this.playerMove(carrier1, battleship1, cruiser1, submarine1, destroyer1, player2);
+			winner = this.checkForWinner(player2);
+			this.displayAttacks(player2, player1, player2);
+			this.endTurn();
+		}
+	}
+
+	this.placeShip = function(ship, player) {
+		loc = readlineSync.question(player.name + 'Enter start location for Carrier(Size = 5) : ').toUpperCase();
+		valid = this.checkIfOnGrid(loc);
+		while(valid != true) {
+			loc = readlineSync.question('This is not a valid input. Please enter a different location :').toUpperCase();
+			valid = this.checkIfOnGrid(loc);
+		}
+		op = this.displayOptions(loc, ship, player);
+		while(op == false) {
+			loc = readlineSync.question('This ship is overlapping with another ship. Try entering a different location!').toUpperCase();
+			op = this.displayOptions(loc, ship, player);
+		}
+		ship.value = op;
+		player.ships.push(ship.value);
+	}
+
+	this.beginTurn = function() {
+		beginturn = ''
+		while(beginturn != 'Y') {
+			beginturn = readlineSync.question('Are you ready to start your turn? Enter "Y" to begin :').toUpperCase();
+		}
+	}
+
+	this.checkIfOnGrid = function(loc) {
+		valid = false;
+	  for(i = 0; i < grid.length; i++) {
+	    for(j = 0; j < grid[i].length; j++) {
+	      if(loc == grid[i][j]) {
+	          valid = true;
+	        }
+	      }
+	    }
+		return valid;
+	}
+
+	this.checkIfOccupied = function(option, player) {
+		occupied = false;
+		for(i = 0;i < player.ships.length; i++){
+			for(j = 0;j < option.length; j++) {
+				if(player.ships[i].includes(option[j])) {
+					occupied = true;
+				}
+			}
+		}
+		return occupied;
+	}
+
+	this.validateSelectedOption = function(selectedOption, dict) {
+	  if(selectedOption < dict.length) {
+	    return true
+	  }
+	  else{
+	    return false
+	  }
+	}
+
+	this.playerMove = function(carrier, battleship, cruiser, submarine, destroyer, player) {
+		var valid = false;
+		var sinkingShip = 0;
+		var move = readlineSync.question(player.name + ' Enter a location : ').toUpperCase();
+		for (row = 0; row < grid.length; row++) {
+			if (grid[row].includes(move) == true) {
+				valid = true;
+			}
+		}
+		if (valid == true) {
+			if (player.hits.includes(move) == true || player.misses.includes(move) == true) {
+				console.log('Already Taken');
+			}
+			for(i = 0;i < player.ships.length;i++) {
+				if(player.ships[i].includes(move)) {
+					console.log('Hit');
+					player.ships[i].splice(player.ships[i].indexOf(move), 1 );
+					player.hits.push(move);
+					if(player.ships[i].length == 0) {
+						console.log('Sunk');
+						return;
+					}
+					return;
+				}
+			}
+				console.log('Miss');
+				player.misses.push(move);
+				return;
+		}
+	}
+
+	this.displayOptions = function(loc, ship, player) {
+		for(i = 0; i < grid.length; i++) {
+			for(j = 0; j < grid[i].length; j++) {
+				if(loc == grid[i][j]) {
+						ship.xpos = i;
+						ship.ypos = j;
+					}
+				}
+			}
+		options = [];
+		option1 = [];
+		option2 = [];
+		option3 = [];
+		option4 = [];
+		//horizontal
+		i = ship.ypos;
+		for(j = 0; j < ship.size; j++) {
+			if(i < grid[0].length) {
+				option1.push(grid[ship.xpos][ship.ypos+j]);
+				i = i + 1;
+			}
+		}
+
+		i = ship.ypos;
+		for(j = 0; j < ship.size; j++) {
+			if(i >= 0) {
+				option2.push(grid[ship.xpos][ship.ypos-j]);
+				i = i - 1;
+			}
+		}
+		//vertical
+		i = ship.xpos;
+		for(j = 0; j < ship.size; j++) {
+			if(i < grid.length) {
+				option3.push(grid[ship.xpos+j][ship.ypos]);
+				i = i + 1;
+			}
+		}
+
+		i = ship.xpos;
+		for(j = 0; j < ship.size; j++) {
+			if(i >= 0) {
+				option4.push(grid[ship.xpos-j][ship.ypos]);
+				i = i - 1;
+			}
+		}
+
+		occupied1 = this.checkIfOccupied(option1, player);
+		if(occupied1 == false) {
+			options.push(option1)
+		}
+		occupied2 = this.checkIfOccupied(option2, player);
+		if(occupied2 == false) {
+			options.push(option2)
+		}
+		occupied3 = this.checkIfOccupied(option3, player);
+		if(occupied3 == false) {
+			options.push(option3)
+		}
+		occupied4 = this.checkIfOccupied(option4, player);
+		if(occupied4 == false) {
+			options.push(option4)
+		}
+
+
+
+		console.log(options);
+		if(options.length != 0) {
+			var dict = [];
+			j = 0;
+			for(i = 0; i < options.length; i++) {
+				if(options[i].length == ship.size) {
+					dict.push({
+						key: j,
+						value: options[i]
+					});
+					console.log(j + ': ' + options[i]);
+					j = j + 1;
+				}
+			}
+			selectedOption = readlineSync.question('Enter an option :');
+			valid = this.validateSelectedOption(selectedOption, dict)
+
+			while(valid != true) {
+				selectedOption = readlineSync.question('This is not a valid input. Please enter a different location :').toUpperCase();
+				valid = this.validateSelectedOption(selectedOption, dict)
+			}
+			return dict[selectedOption].value;
+		}
+		else {
+			return false;
+		}
+
+	}
+
+	this.displayShips = function(player) {
+		var board = new Board();
+		var shipsGrid = board.grid;
+
+		for(i = 0;i < shipsGrid.length; i++) {
+			for(j = 0;j < shipsGrid[i].length; j++) {
+				for(k = 0;k < player.ships.length; k++){
+					if(player.ships[k].includes(grid[i][j]))
+						shipsGrid[i][j] = ' S'
+				}
+			}
+		}
+
+		return(shipsGrid);
+	}
+
+	this.displayAttacks = function(player, player1, player2) {
+		var board = new Board();
+		var attacksGrid = board.grid;
+
+		for(i = 0;i < attacksGrid.length; i++) {
+			for(j = 0;j < attacksGrid[i].length; j++) {
+				if(player.name == 'Player 1') {
+					if(player1.hits.includes(grid[i][j])) {
+						attacksGrid[i][j] = 'P1H'
+					}
+					else if(player2.hits.includes(grid[i][j])) {
+						attacksGrid[i][j] = 'P2H'
+					}
+				}
+					if(player2.hits.includes(grid[i][j])) {
+						attacksGrid[i][j] = 'P2H'
+					}
+					else if(player1.hits.includes(grid[i][j])) {
+						attacksGrid[i][j] = 'P1H'
+					}
+				if(player.misses.includes(grid[i][j])) {
+					attacksGrid[i][j] = ' M'
+				}
+			}
+		}
+		console.log("THIS GRID SHOWS THE LOCATION OF YOUR ATTACKS, MISSES AND THE OPPONENTS ATTACKS")
+		console.log(attacksGrid);
+	}
+
+	this.endTurn = function() {
+		endturn = ''
+		while(endturn != 'N') {
+			endturn = readlineSync.question('Your turn has ended. Press "n" to let the next player start their turn.').toUpperCase();
+		}
+		console.clear();
+	}
+
+	this.checkForWinner = function(player) {
+		winner = true;
+		for(i = 0;i < player.ships.length; i++) {
+				if(player.ships[i].length == 0) {
+					winner = true
+				}
+				else {
+					winner = false
+					return winner;
+				}
+		}
+		if(winner == true) {
+			console.log(player.name + "Won")
+		}
+		return winner;
+	}
+
 }
 
-//It makes sure that the options being provided to the user are valid options for placing the ship.
-function validateOptions(option, ships) {
-  valid = true
-  for(i = 0; i < ships.length; i++) {
-    for(j = 0; j < ships[i].length; j++) {
-      if(ships[i][j] == option) {
-        valid = false;
-      }
-    }
-  }
-  return valid;
-}
-
-//It makes sure the option selected by the user is from the list of options that have been provided to the user.
-function validateSelectedOption(selectedOption, dict) {
-  if(selectedOption < dict.length) {
-    return true
-  }
-  else{
-    return false
-  }
-}
-
-//Asks the player for the location they want to attack. It then returns whether that attack was a hit, miss or it has already been attacked before.
-function playerMove (player, carrier, battleship, cruiser, submarine, destroyer, hits, misses) {
-  var valid = false;
-  var sinkingShip = 0;
-  var move = readlineSync.question(player + ' Enter a location : ').toUpperCase();
-  for (row = 0; row < grid.length; row++) {
-    if (grid[row].includes(move) == true) {
-      valid = true;
-    }
-  }
-  if (valid == true) {
-    if (hits.includes(move) == true || misses.includes(move) == true) {
-      console.log('Already Taken');
-    }
-    else if (carrier.includes(move)) {
-      console.log('Hit');
-      carrier.splice(carrier.indexOf(move), 1 );
-      hits.push(move);
-      sinkingShip = carrier;
-    }
-    else if (battleship.includes(move)) {
-      console.log('Hit');
-      battleship.splice(battleship.indexOf(move), 1 );
-      hits.push(move);
-      sinkingShip = battleship;
-    }
-    else if (cruiser.includes(move)) {
-      console.log('Hit');
-      cruiser.splice(cruiser.indexOf(move), 1 );
-      hits.push(move);
-      sinkingShip = cruiser;
-    }
-    else if (submarine.includes(move)) {
-      console.log('Hit');
-      submarine.splice(submarine.indexOf(move), 1 );
-      hits.push(move);
-      sinkingShip = submarine;
-    }
-    else if (destroyer.includes(move)) {
-      console.log('Hit');
-      destroyer.splice(destroyer.indexOf(move), 1 );
-      hits.push(move);
-      sinkingShip = destroyer;
-    }
-    else {
-      console.log('Miss')
-      misses.push(move)
-      return
-    }
-    if (sinkingShip.length == 0) {
-      console.log('Sunk')
-    }
-  }
-}
-
-//Lets the player view their grid and the hits and the misses until they want to end their turn.
-function endTurn() {
-  endturn = 'NO'
-  while(endturn != 'YES') {
-    endturn = readlineSync.question('Do you want to end your turn : ').toUpperCase();
-  }
-  console.clear();
-}
-
-//Creates a deep clone of the original grid so that when the updatedGrid is changed, it won't effect the original one.
-function deepCloning(objectpassed) {
-  if (objectpassed === null || typeof objectpassed !== 'object') {
-     return objectpassed;
-  }
-  var temporarystorage = objectpassed.constructor();
-    for (var key in objectpassed) {
-      temporarystorage[key] = deepCloning(objectpassed[key]);
-    }
-    return temporarystorage;
-}
-
-//Checks if anyone won the game. If so, it will print out who won and end the game.
-function checkForWinner (player, carrier, battleship, cruiser, submarine, destroyer) {
-  if (carrier.length == 0 && battleship.length == 0 && cruiser.length == 0 && submarine.length == 0 && destroyer.length == 0) {
-    console.log(player + 'Won');
-    return(true)
-  }
-  return(false)
-}
-
-play()
+var game = new Game()
+game.gameLoop();
