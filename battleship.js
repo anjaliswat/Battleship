@@ -38,9 +38,9 @@ class Ship {
 class Game {
 	gameLoop() {
     var board = new Board();
-  	var grid = board.grid;
+    var grid = board.grid;
 
-  	var player1 = new Player("Player 1");
+    var player1 = new Player("Player 1");
   	var player2 = new Player("Player 2");
 
 		console.log(grid);
@@ -78,7 +78,7 @@ class Game {
 			console.log(player1ShipsGrid);
 			this.displayAttacks(player1, player2, grid);
 			this.playerMove(player1, player2, grid);
-			winner = this.checkForWinner(player2);
+			winner = this.checkForWinner(player1, player2);
 			if(winner == true) {
 				return
 			}
@@ -89,7 +89,7 @@ class Game {
 			console.log(player2ShipsGrid)
 			this.displayAttacks(player2, player1, grid );
 			this.playerMove(player2, player1, grid);
-			winner = this.checkForWinner(player1);
+			winner = this.checkForWinner(player2, player1);
 			this.displayAttacks(player2, player1, grid);
 			this.endTurn();
 		}
@@ -111,7 +111,7 @@ class Game {
 		player.ships.push(ship.value);
 	}
 
-	beginTurn() {
+  beginTurn() {
     if(readlineSync.keyInYN('Are you ready to start your turn? :')) {
       return
     }
@@ -315,19 +315,13 @@ class Game {
     }
 	}
 
-	checkForWinner(player) {
-		var winner = true;
-		for(var i = 0; i < player.ships.length; i++) {
-				if(player.ships[i].length == 0) {
-					winner = true;
-				}
-				else {
+	checkForWinner(winner, loser) {
+		for(var i = 0; i < loser.ships.length; i++) {
+				if(loser.ships[i].length != 0) {
 					return false;
 				}
 		}
-		if(winner == true) {
-			console.log(player.name + "Won");
-		}
+		console.log(winner.name + " Won");
 		return true;
 	}
 }
