@@ -47,9 +47,9 @@ class Game {
     var player1 = new Player("Player 1");
   	var player2 = new Player("Player 2");
 
-		console.log(grid);
 
     //Player 1 gets prompts for placing all the ships.
+		console.log(grid);
 		var carrier1 = new Ship(5, 'Carrier');
 		this.placeShip(carrier1, player1, grid)
 		var battleship1 = new Ship(4, 'Battleship');
@@ -63,6 +63,7 @@ class Game {
 		console.clear();
 
     //Player 2 gets prompts for placing all the ships.
+		console.log(grid);
 		var carrier2 = new Ship(5, 'Carrier');
 		this.placeShip(carrier2, player2, grid)
 		var battleship2 = new Ship(4, 'Battleship');
@@ -82,7 +83,7 @@ class Game {
     //Until there is no winner, the following statements will keep executing.
 		var winner = false;
 		while (winner != true) {
-			this.beginTurn();
+			this.beginTurn(player1);
       console.log('THIS GRID SHOWS WHERE YOUR SHIPS ARE PLACED (S)');
 			console.log(player1ShipsGrid);
 			this.displayAttacks(player1, player2, grid);
@@ -94,7 +95,7 @@ class Game {
 			this.displayAttacks(player1, player2, grid);
 			this.endTurn();
 
-			this.beginTurn();
+			this.beginTurn(player2);
 			console.log(player2ShipsGrid)
 			this.displayAttacks(player2, player1, grid );
 			this.playerMove(player2, player1, grid);
@@ -124,12 +125,12 @@ class Game {
 
   //Asks the players if they are ready for their turn at the start of each players turn. On clicking Y it will display
   //the players grids and ask the player to make a move.
-  beginTurn() {
-    if(readlineSync.keyInYN('Are you ready to start your turn? :')) {
+  beginTurn(player) {
+    if(readlineSync.keyInYN(player.name + ' Are you ready to start your turn? :')) {
       return
     }
     else {
-      this.beginTurn()
+      this.beginTurn(player)
     }
 	}
 
@@ -338,7 +339,7 @@ class Game {
 
   //Asls if the player is done with their turn. If they type Y then the console will be cleared.
 	endTurn() {
-    if(readlineSync.keyInYN('Do you want to end you turn :')) {
+    if(readlineSync.keyInYN('Do you want to end your turn :')) {
       console.clear();
     }
     else {
