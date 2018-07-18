@@ -17,8 +17,8 @@ class Board {
 }
 
 class Player {
-	constructor(name, ships, hits, misses) {
-		this.name = '';
+	constructor(name) {
+		this.name = name;
 		this.ships = [];
 		this.hits = [];
 		this.misses = [];
@@ -26,8 +26,8 @@ class Player {
 }
 
 class Ship {
-	constructor(size){
-		this.name = '';
+	constructor(size, name){
+		this.name = name;
 		this.value = [];
 		this.xpos = '';
 		this.ypos = '';
@@ -35,116 +35,114 @@ class Ship {
 	}
 }
 
-function Game() {
-	var b = new Board();
-	var grid = b.grid;
+class Game {
+	gameLoop() {
+    var board = new Board();
+  	var grid = board.grid;
 
-	var player1 = new Player();
-	player1.name = "Player 1";
-	var player2 = new Player();
-	player2.name = "Player 2";
+  	var player1 = new Player("Player 1");
+  	var player2 = new Player("Player 2");
 
-	this.gameLoop = function () {
 		console.log(grid);
 
-		var carrier1 = new Ship(5);
-		this.placeShip(carrier1, player1)
-		var battleship1 = new Ship(4);
-		this.placeShip(battleship1, player1)
-		var cruiser1 = new Ship(3);
-		this.placeShip(cruiser1, player1)
-		var submarine1 = new Ship(3);
-		this.placeShip(submarine1, player1)
-		var destroyer1 = new Ship(2);
-		this.placeShip(destroyer1, player1)
+		var carrier1 = new Ship(5, 'Carrier');
+		this.placeShip(carrier1, player1, grid)
+		var battleship1 = new Ship(4, 'Battleship');
+		this.placeShip(battleship1, player1, grid)
+		var cruiser1 = new Ship(3, 'Cruiser');
+		this.placeShip(cruiser1, player1, grid)
+		var submarine1 = new Ship(3, 'Submarine');
+		this.placeShip(submarine1, player1, grid)
+		var destroyer1 = new Ship(2, 'Destroyer');
+		this.placeShip(destroyer1, player1, grid)
 		console.clear();
 
-		var carrier2 = new Ship(5);
-		this.placeShip(carrier2, player2)
-		var battleship2 = new Ship(4);
-		this.placeShip(battleship2, player2)
-		var cruiser2 = new Ship(3);
-		this.placeShip(cruiser2, player2)
-		var submarine2 = new Ship(3);
-		this.placeShip(submarine2, player2)
-		var destroyer2 = new Ship(2);
-		this.placeShip(destroyer2, player2)
+		var carrier2 = new Ship(5, 'Carrier');
+		this.placeShip(carrier2, player2, grid)
+		var battleship2 = new Ship(4, 'Battleship');
+		this.placeShip(battleship2, player2, grid)
+		var cruiser2 = new Ship(3, 'Cruiser');
+		this.placeShip(cruiser2, player2, grid)
+		var submarine2 = new Ship(3, 'Submarine');
+		this.placeShip(submarine2, player2, grid)
+		var destroyer2 = new Ship(2, 'Destroyer');
+		this.placeShip(destroyer2, player2, grid)
 		console.clear();
 
-		player1ShipsGrid = this.displayShips(player1);
-		player2ShipsGrid = this.displayShips(player2);
+		var player1ShipsGrid = this.displayShips(player1, grid);
+		var player2ShipsGrid = this.displayShips(player2, grid);
 
-		winner = false;
+		var winner = false;
 		while (winner != true) {
 			this.beginTurn();
 			console.log(player1ShipsGrid);
-			this.displayAttacks(player1, player1, player2);
-			this.playerMove(carrier2, battleship2, cruiser2, submarine2, destroyer2, player1);
-			winner = this.checkForWinner(player1);
+			this.displayAttacks(player1, player2, grid);
+			this.playerMove(player1, player2, grid);
+			winner = this.checkForWinner(player2);
 			if(winner == true) {
 				return
 			}
-			this.displayAttacks(player1, player1, player2);
+			this.displayAttacks(player1, player2, grid);
 			this.endTurn();
 
 			this.beginTurn();
 			console.log(player2ShipsGrid)
-			this.displayAttacks(player2, player1, player2);
-			this.playerMove(carrier1, battleship1, cruiser1, submarine1, destroyer1, player2);
-			winner = this.checkForWinner(player2);
-			this.displayAttacks(player2, player1, player2);
+			this.displayAttacks(player2, player1, grid );
+			this.playerMove(player2, player1, grid);
+			winner = this.checkForWinner(player1);
+			this.displayAttacks(player2, player1, grid);
 			this.endTurn();
 		}
 	}
 
-	this.placeShip = function(ship, player) {
-		loc = readlineSync.question(player.name + 'Enter start location for Carrier(Size = 5) : ').toUpperCase();
-		valid = this.checkIfOnGrid(loc);
+	placeShip(ship, player, grid) {
+		var loc = readlineSync.question(player.name + ' Enter start location for ' + ship.name + ' : ').toUpperCase();
+		var valid = this.checkIfOnGrid(loc, grid);
 		while(valid != true) {
 			loc = readlineSync.question('This is not a valid input. Please enter a different location :').toUpperCase();
-			valid = this.checkIfOnGrid(loc);
+			valid = this.checkIfOnGrid(loc, grid);
 		}
-		op = this.displayOptions(loc, ship, player);
+		var op = this.displayOptions(loc, ship, player, grid);
 		while(op == false) {
 			loc = readlineSync.question('This ship is overlapping with another ship. Try entering a different location!').toUpperCase();
-			op = this.displayOptions(loc, ship, player);
+			op = this.displayOptions(loc, ship, player, grid);
 		}
 		ship.value = op;
 		player.ships.push(ship.value);
 	}
 
-	this.beginTurn = function() {
-		beginturn = ''
-		while(beginturn != 'Y') {
-			beginturn = readlineSync.question('Are you ready to start your turn? Enter "Y" to begin :').toUpperCase();
-		}
+	beginTurn() {
+    if(readlineSync.keyInYN('Are you ready to start your turn? :')) {
+      return
+    }
+    else {
+      this.beginTurn()
+    }
 	}
 
-	this.checkIfOnGrid = function(loc) {
-		valid = false;
-	  for(i = 0; i < grid.length; i++) {
-	    for(j = 0; j < grid[i].length; j++) {
-	      if(loc == grid[i][j]) {
-	          valid = true;
+	checkIfOnGrid(location, grid) {
+	  for(var i = 0; i < grid.length; i++) {
+	    for(var j = 0; j < grid[i].length; j++) {
+	      if(location == grid[i][j]) {
+	          return true;
 	        }
 	      }
 	    }
-		return valid;
+		return false;
 	}
 
-	this.checkIfOccupied = function(option, player) {
-		occupied = false;
-		for(i = 0;i < player.ships.length; i++){
-			for(j = 0;j < option.length; j++) {
+	checkIfOccupied(option, player) {
+		for(var i = 0;i < player.ships.length; i++){
+			for(var j = 0;j < option.length; j++) {
 				if(player.ships[i].includes(option[j])) {
-					occupied = true;
+					return true;
 				}
 			}
 		}
-		return occupied;
+		return false;
 	}
 
-	this.validateSelectedOption = function(selectedOption, dict) {
+	validateSelectedOption(selectedOption, dict) {
 	  if(selectedOption < dict.length) {
 	    return true
 	  }
@@ -153,25 +151,26 @@ function Game() {
 	  }
 	}
 
-	this.playerMove = function(carrier, battleship, cruiser, submarine, destroyer, player) {
+	playerMove(playerAttacking, playerUnderAttack, grid) {
 		var valid = false;
 		var sinkingShip = 0;
-		var move = readlineSync.question(player.name + ' Enter a location : ').toUpperCase();
-		for (row = 0; row < grid.length; row++) {
+		var move = readlineSync.question(playerAttacking.name + ' Enter a location : ').toUpperCase();
+		for (var row = 0; row < grid.length; row++) {
 			if (grid[row].includes(move) == true) {
 				valid = true;
 			}
 		}
 		if (valid == true) {
-			if (player.hits.includes(move) == true || player.misses.includes(move) == true) {
+			if (playerAttacking.hits.includes(move) == true || playerAttacking.misses.includes(move) == true) {
 				console.log('Already Taken');
+        return;
 			}
-			for(i = 0;i < player.ships.length;i++) {
-				if(player.ships[i].includes(move)) {
+			for(var i = 0; i < playerUnderAttack.ships.length; i++) {
+				if(playerUnderAttack.ships[i].includes(move)) {
 					console.log('Hit');
-					player.ships[i].splice(player.ships[i].indexOf(move), 1 );
-					player.hits.push(move);
-					if(player.ships[i].length == 0) {
+					playerUnderAttack.ships[i].splice(playerUnderAttack.ships[i].indexOf(move), 1 );
+					playerAttacking.hits.push(move);
+					if(playerUnderAttack.ships[i].length == 0) {
 						console.log('Sunk');
 						return;
 					}
@@ -179,143 +178,126 @@ function Game() {
 				}
 			}
 				console.log('Miss');
-				player.misses.push(move);
+				playerAttacking.misses.push(move);
 				return;
 		}
 	}
 
-	this.displayOptions = function(loc, ship, player) {
-		for(i = 0; i < grid.length; i++) {
-			for(j = 0; j < grid[i].length; j++) {
+	displayOptions(loc, ship, player, grid) {
+		for(var i = 0; i < grid.length; i++) {
+			for(var j = 0; j < grid[i].length; j++) {
 				if(loc == grid[i][j]) {
 						ship.xpos = i;
 						ship.ypos = j;
 					}
 				}
 			}
-		options = [];
-		option1 = [];
-		option2 = [];
-		option3 = [];
-		option4 = [];
 		//horizontal
-		i = ship.ypos;
-		for(j = 0; j < ship.size; j++) {
+    var option1 = [];
+		var i = ship.ypos;
+		for(var j = 0; j < ship.size; j++) {
 			if(i < grid[0].length) {
 				option1.push(grid[ship.xpos][ship.ypos+j]);
 				i = i + 1;
 			}
 		}
 
+    var option2 = [];
 		i = ship.ypos;
-		for(j = 0; j < ship.size; j++) {
+		for(var j = 0; j < ship.size; j++) {
 			if(i >= 0) {
 				option2.push(grid[ship.xpos][ship.ypos-j]);
 				i = i - 1;
 			}
 		}
 		//vertical
+    var option3 = [];
 		i = ship.xpos;
-		for(j = 0; j < ship.size; j++) {
+		for(var j = 0; j < ship.size; j++) {
 			if(i < grid.length) {
 				option3.push(grid[ship.xpos+j][ship.ypos]);
 				i = i + 1;
 			}
 		}
-
+    var option4 = [];
 		i = ship.xpos;
-		for(j = 0; j < ship.size; j++) {
+		for(var j = 0; j < ship.size; j++) {
 			if(i >= 0) {
 				option4.push(grid[ship.xpos-j][ship.ypos]);
 				i = i - 1;
 			}
 		}
 
-		occupied1 = this.checkIfOccupied(option1, player);
-		if(occupied1 == false) {
-			options.push(option1)
-		}
-		occupied2 = this.checkIfOccupied(option2, player);
-		if(occupied2 == false) {
-			options.push(option2)
-		}
-		occupied3 = this.checkIfOccupied(option3, player);
-		if(occupied3 == false) {
-			options.push(option3)
-		}
-		occupied4 = this.checkIfOccupied(option4, player);
-		if(occupied4 == false) {
-			options.push(option4)
-		}
+    j = 0;
+    var options = [];
+    options.push(option1, option2, option3, option4)
+    var dict = [];
+    for(var i = 0; i < options.length; i++) {
+      if(options[i].length == ship.size) {
+        var occupied = this.checkIfOccupied(options[i], player)
+        if(occupied == false) {
+          dict.push({
+            key: j,
+            value: options[i]
+          });
+          console.log(j + ': ' + options[i]);
+          j = j + 1;
+        }
+      }
+    }
 
-
-
-		console.log(options);
-		if(options.length != 0) {
-			var dict = [];
-			j = 0;
-			for(i = 0; i < options.length; i++) {
-				if(options[i].length == ship.size) {
-					dict.push({
-						key: j,
-						value: options[i]
-					});
-					console.log(j + ': ' + options[i]);
-					j = j + 1;
-				}
-			}
-			selectedOption = readlineSync.question('Enter an option :');
-			valid = this.validateSelectedOption(selectedOption, dict)
-
+    if(dict.length != 0) {
+			var selectedOption = readlineSync.question('Enter an option :');
+			var valid = this.validateSelectedOption(selectedOption, dict)
 			while(valid != true) {
 				selectedOption = readlineSync.question('This is not a valid input. Please enter a different location :').toUpperCase();
 				valid = this.validateSelectedOption(selectedOption, dict)
 			}
 			return dict[selectedOption].value;
-		}
+    }
 		else {
 			return false;
 		}
-
 	}
 
-	this.displayShips = function(player) {
+	displayShips(player, grid) {
 		var board = new Board();
 		var shipsGrid = board.grid;
 
-		for(i = 0;i < shipsGrid.length; i++) {
-			for(j = 0;j < shipsGrid[i].length; j++) {
-				for(k = 0;k < player.ships.length; k++){
+		for(var i = 0;i < shipsGrid.length; i++) {
+			for(var j = 0;j < shipsGrid[i].length; j++) {
+				for(var k = 0;k < player.ships.length; k++){
 					if(player.ships[k].includes(grid[i][j]))
 						shipsGrid[i][j] = ' S'
 				}
 			}
 		}
-
 		return(shipsGrid);
 	}
 
-	this.displayAttacks = function(player, player1, player2) {
+	displayAttacks(playerAttacking, playerUnderAttack, grid) {
 		var board = new Board();
 		var attacksGrid = board.grid;
 
-		for(i = 0;i < attacksGrid.length; i++) {
-			for(j = 0;j < attacksGrid[i].length; j++) {
-				if(player.name == 'Player 1') {
-					if(player1.hits.includes(grid[i][j])) {
+		for(var i = 0; i < attacksGrid.length; i++) {
+			for(var j = 0; j < attacksGrid[i].length; j++) {
+				if(playerAttacking.name == 'Player 1') {
+					if(playerAttacking.hits.includes(grid[i][j])) {
 						attacksGrid[i][j] = 'P1H'
 					}
-					else if(player2.hits.includes(grid[i][j])) {
+					else if(playerUnderAttack.hits.includes(grid[i][j])) {
 						attacksGrid[i][j] = 'P2H'
 					}
 				}
-					if(player2.hits.includes(grid[i][j])) {
+        else {
+					if(playerAttacking.hits.includes(grid[i][j])) {
 						attacksGrid[i][j] = 'P2H'
 					}
-					else if(player1.hits.includes(grid[i][j])) {
+					else if(playerUnderAttack.hits.includes(grid[i][j])) {
 						attacksGrid[i][j] = 'P1H'
 					}
-				if(player.misses.includes(grid[i][j])) {
+        }
+				if(playerAttacking.misses.includes(grid[i][j])) {
 					attacksGrid[i][j] = ' M'
 				}
 			}
@@ -324,31 +306,30 @@ function Game() {
 		console.log(attacksGrid);
 	}
 
-	this.endTurn = function() {
-		endturn = ''
-		while(endturn != 'N') {
-			endturn = readlineSync.question('Your turn has ended. Press "n" to let the next player start their turn.').toUpperCase();
-		}
-		console.clear();
+	endTurn() {
+    if(readlineSync.keyInYN('Do you want to end you turn :')) {
+      console.clear();
+    }
+    else {
+      this.endTurn();
+    }
 	}
 
-	this.checkForWinner = function(player) {
-		winner = true;
-		for(i = 0;i < player.ships.length; i++) {
+	checkForWinner(player) {
+		var winner = true;
+		for(var i = 0; i < player.ships.length; i++) {
 				if(player.ships[i].length == 0) {
-					winner = true
+					winner = true;
 				}
 				else {
-					winner = false
-					return winner;
+					return false;
 				}
 		}
 		if(winner == true) {
-			console.log(player.name + "Won")
+			console.log(player.name + "Won");
 		}
-		return winner;
+		return true;
 	}
-
 }
 
 var game = new Game()
