@@ -4,18 +4,20 @@ const readlineSync = require('readline-sync');
 class Board {
 	constructor() {
 		this.grid = [['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9'],
-			['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9'],
-			['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9'],
-			['D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9'],
-			['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'E8', 'E9'],
-			['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9'],
-			['G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'G9'],
-			['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'H9'],
-			['I1', 'I2', 'I3', 'I4', 'I5', 'I6', 'I7', 'I8', 'I9'],
-			['J1', 'J2', 'J3', 'J4', 'J5', 'J6', 'J7', 'J8', 'J9']]
+          			['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9'],
+          			['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9'],
+          			['D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9'],
+          			['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'E8', 'E9'],
+          			['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9'],
+          			['G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'G9'],
+          			['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'H9'],
+          			['I1', 'I2', 'I3', 'I4', 'I5', 'I6', 'I7', 'I8', 'I9'],
+          			['J1', 'J2', 'J3', 'J4', 'J5', 'J6', 'J7', 'J8', 'J9']]
 	}
 }
 
+//Player has the attributes name(Player 1 or Player 2), ships(An array of all the players ships locations)
+//hits(All the players hits throughout the game) and misses(All the players misses throughout the game)
 class Player {
 	constructor(name) {
 		this.name = name;
@@ -25,6 +27,8 @@ class Player {
 	}
 }
 
+//Ship has the attributes name(Carrier, Battleship etc.), value(Stores what locations the ships are placed at on the grid like
+// A1 A2 A3 A4 A5), xpos(Starting position x coordinate), ypos(Starting position y coordinate), size(5 for Carrier, 4 for Battleship etc.)
 class Ship {
 	constructor(size, name){
 		this.name = name;
@@ -45,6 +49,7 @@ class Game {
 
 		console.log(grid);
 
+    //Player 1 gets prompts for placing all the ships.
 		var carrier1 = new Ship(5, 'Carrier');
 		this.placeShip(carrier1, player1, grid)
 		var battleship1 = new Ship(4, 'Battleship');
@@ -57,6 +62,7 @@ class Game {
 		this.placeShip(destroyer1, player1, grid)
 		console.clear();
 
+    //Player 2 gets prompts for placing all the ships.
 		var carrier2 = new Ship(5, 'Carrier');
 		this.placeShip(carrier2, player2, grid)
 		var battleship2 = new Ship(4, 'Battleship');
@@ -69,12 +75,15 @@ class Game {
 		this.placeShip(destroyer2, player2, grid)
 		console.clear();
 
+    //Created 2 grids which display the location of the ships for player 1 and player 2 respectively.
 		var player1ShipsGrid = this.displayShips(player1, grid);
 		var player2ShipsGrid = this.displayShips(player2, grid);
 
+    //Until there is no winner, the following statements will keep executing.
 		var winner = false;
 		while (winner != true) {
 			this.beginTurn();
+      console.log('THIS GRID SHOWS WHERE YOUR SHIPS ARE PLACED (S)');
 			console.log(player1ShipsGrid);
 			this.displayAttacks(player1, player2, grid);
 			this.playerMove(player1, player2, grid);
@@ -95,6 +104,8 @@ class Game {
 		}
 	}
 
+  //Prompts the player to enter a start location for the ship. Validates the player input and if it isn't valid asks
+  //player to enter a different location.
 	placeShip(ship, player, grid) {
 		var loc = readlineSync.question(player.name + ' Enter start location for ' + ship.name + ' : ').toUpperCase();
 		var valid = this.checkIfOnGrid(loc, grid);
@@ -111,6 +122,8 @@ class Game {
 		player.ships.push(ship.value);
 	}
 
+  //Asks the players if they are ready for their turn at the start of each players turn. On clicking Y it will display
+  //the players grids and ask the player to make a move.
   beginTurn() {
     if(readlineSync.keyInYN('Are you ready to start your turn? :')) {
       return
@@ -120,6 +133,7 @@ class Game {
     }
 	}
 
+  //Checks that the position being entered by the player is on the grid.
 	checkIfOnGrid(location, grid) {
 	  for(var i = 0; i < grid.length; i++) {
 	    for(var j = 0; j < grid[i].length; j++) {
@@ -131,9 +145,10 @@ class Game {
 		return false;
 	}
 
+  //Checks if the position being entered by the player is already occupied by another ship.
 	checkIfOccupied(option, player) {
-		for(var i = 0;i < player.ships.length; i++){
-			for(var j = 0;j < option.length; j++) {
+		for(var i = 0; i < player.ships.length; i++){
+			for(var j = 0; j < option.length; j++) {
 				if(player.ships[i].includes(option[j])) {
 					return true;
 				}
@@ -142,6 +157,7 @@ class Game {
 		return false;
 	}
 
+  //Checks if the option the user is entering is from the list being provided to the user.
 	validateSelectedOption(selectedOption, dict) {
 	  if(selectedOption < dict.length) {
 	    return true
@@ -151,6 +167,8 @@ class Game {
 	  }
 	}
 
+  //Asks player to enter a location for attacking. Then checks whether this locations has already been taken or if it's a hit or a miss.
+  //Also checks whether the ship that has been attacked has sunk or not.
 	playerMove(playerAttacking, playerUnderAttack, grid) {
     var valid = false;
 		var sinkingShip = 0;
@@ -189,6 +207,7 @@ class Game {
 		}
 	}
 
+  //When the player enters the start point, display options will display all the possible options from that point.
 	displayOptions(loc, ship, player, grid) {
 		for(var i = 0; i < grid.length; i++) {
 			for(var j = 0; j < grid[i].length; j++) {
@@ -198,7 +217,7 @@ class Game {
 					}
 				}
 			}
-		//horizontal
+		//horizontal right
     var option1 = [];
 		var i = ship.ypos;
 		for(var j = 0; j < ship.size; j++) {
@@ -207,7 +226,7 @@ class Game {
 				i = i + 1;
 			}
 		}
-
+    //horizontal left
     var option2 = [];
 		i = ship.ypos;
 		for(var j = 0; j < ship.size; j++) {
@@ -216,7 +235,7 @@ class Game {
 				i = i - 1;
 			}
 		}
-		//vertical
+		//vertical down
     var option3 = [];
 		i = ship.xpos;
 		for(var j = 0; j < ship.size; j++) {
@@ -225,6 +244,7 @@ class Game {
 				i = i + 1;
 			}
 		}
+    //vertical up
     var option4 = [];
 		i = ship.xpos;
 		for(var j = 0; j < ship.size; j++) {
@@ -252,6 +272,7 @@ class Game {
       }
     }
 
+    //Proceeds if the dict.length is not equal to zero. Because if it were equal to zero that would mean there are no options.
     if(dict.length != 0) {
 			var selectedOption = readlineSync.question('Enter an option :');
 			var valid = this.validateSelectedOption(selectedOption, dict)
@@ -266,13 +287,14 @@ class Game {
 		}
 	}
 
+  //Based on what options the player has selected for placing their ships, the ships will be displayed on the grid.
 	displayShips(player, grid) {
 		var board = new Board();
 		var shipsGrid = board.grid;
 
-		for(var i = 0;i < shipsGrid.length; i++) {
-			for(var j = 0;j < shipsGrid[i].length; j++) {
-				for(var k = 0;k < player.ships.length; k++){
+		for(var i = 0; i < shipsGrid.length; i++) {
+			for(var j = 0; j < shipsGrid[i].length; j++) {
+				for(var k = 0; k < player.ships.length; k++){
 					if(player.ships[k].includes(grid[i][j]))
 						shipsGrid[i][j] = ' S'
 				}
@@ -281,6 +303,8 @@ class Game {
 		return(shipsGrid);
 	}
 
+  //Displays the attacks, hits and misses on the grid. If both the players have Hit the same location then the player who's
+  //turn it currently is, will see their attack.
 	displayAttacks(playerAttacking, playerUnderAttack, grid) {
 		var board = new Board();
 		var attacksGrid = board.grid;
@@ -308,10 +332,11 @@ class Game {
 				}
 			}
 		}
-		console.log("THIS GRID SHOWS THE LOCATION OF YOUR ATTACKS, MISSES AND THE OPPONENTS ATTACKS")
+		console.log('THIS GRID SHOWS THE LOCATION OF YOUR ATTACKS, MISSES AND THE OPPONENTS ATTACKS.(P1H = Player 1 Hit) (P2H = Player 2 Hit) (M = Your Misses)')
 		console.log(attacksGrid);
 	}
 
+  //Asls if the player is done with their turn. If they type Y then the console will be cleared.
 	endTurn() {
     if(readlineSync.keyInYN('Do you want to end you turn :')) {
       console.clear();
@@ -321,16 +346,18 @@ class Game {
     }
 	}
 
+  //Checks if the player has won or not by checking if all the other players ships are empty.
 	checkForWinner(winner, loser) {
 		for(var i = 0; i < loser.ships.length; i++) {
 				if(loser.ships[i].length != 0) {
 					return false;
 				}
 		}
-		console.log(winner.name + " Won");
+		console.log(winner.name + ' Won');
 		return true;
 	}
 }
 
+//Starting the game
 var game = new Game()
 game.gameLoop();
